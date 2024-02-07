@@ -1,6 +1,6 @@
 # TypechoUpGithub
 本插件用于将文章附件上传至Github，并使用自建的Cf Pages进行文件访问加速。<br>
-###详情: https://www.frkovo.cn/easypaper/free/i_love_github/###
+### 详情: https://www.frkovo.cn/easypaper/free/i_love_github/ ###
 
 ## 插件说明
 本插件适用于Tyoecho。
