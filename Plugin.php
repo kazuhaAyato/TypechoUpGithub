@@ -111,6 +111,7 @@ class TypechoUpGithub_Plugin implements Typecho_Plugin_Interface
         <li>Github API限制每个IP每小时只能请求60次接口，请控制您操作图片(上传修改删除)的频率。</li>
         </ol>
         "));
+        $custom_url = new Typecho_Widget_Helper_Form_Element_Text('customurl',NULL, '', _t('自定义域名'), _t('您自备的域名'));
         $github_user = new Typecho_Widget_Helper_Form_Element_Text('githubUser',
             NULL, '', _t('Github用户名'), _t('您的Github用户名'));
         $github_repo = new Typecho_Widget_Helper_Form_Element_Text('githubRepo',
@@ -118,7 +119,6 @@ class TypechoUpGithub_Plugin implements Typecho_Plugin_Interface
         $github_token = new Typecho_Widget_Helper_Form_Element_Text('githubToken', NULL, '', _t('Github账号token'), _t('不知道如何获取账号token请<a href="https://zhuanlan.zhihu.com/p/550294543" target="_blank">点击这里</a>'));
         $github_directory = new Typecho_Widget_Helper_Form_Element_Text('githubDirectory',
             NULL, '/usr/uploads', _t('Github仓库内的上传目录'), _t('比如/usr/uploads，最后一位不需要斜杠'));
-        $url_type = new Typecho_Widget_Helper_Form_Element_Select('urlType', array('latest' => '访问最新版本', 'direct' => '直接访问'), 'latest', _t('文件链接访问方式：'), _t('建议选择"访问最新版本"。若修改图片，直接访问方式不方便更新缓存。'));
         $desc3 = new Typecho_Widget_Helper_Form_Element_Text('desc3', NULL, '', _t('由于Linux权限问题，可能会由于无法创建目录导致文件保存到本地失败而报错异常，请给予本地上传目录777权限。<br>您也可以选择不保存到本地，但可能导致您的主题或其他插件的某些功能异常。<br>您也可以在每一月手动创建当月的目录，避免出现目录创建失败问题（推荐）。'));
         $if_save = new Typecho_Widget_Helper_Form_Element_Select('ifSave', array('save' => '保存到本地', 'notsave' => '不保存到本地'), 'save', _t('是否保存在本地：'), _t('是否将上传的文件保存在本地。'));
         $desc2 = new Typecho_Widget_Helper_Form_Element_Text('desc2', NULL, '', _t('以下两个参数为选填，留空则为仓库所有者信息。若填写则必须两个都填写。如果您不知道该如何填写，默认即可，不需要修改。'));
@@ -127,9 +127,9 @@ class TypechoUpGithub_Plugin implements Typecho_Plugin_Interface
         $form->addInput($desc1);
         $form->addInput($github_user->addRule('required', _t('请输入Github用户名')));
         $form->addInput($github_repo->addRule('required', _t('请输入Github仓库名')));
+        $form->addInput($custom_url->addRule('required', _t('请输入自己的URL')));
         $form->addInput($github_token->addRule('required', _t('请输入Github账号token')));
         $form->addInput($github_directory->addRule('required', _t('请输入Github上传目录')));
-        $form->addInput($url_type);
         $form->addInput($desc3);
         $form->addInput($if_save);
         $form->addInput($desc2);
@@ -422,7 +422,7 @@ class TypechoUpGithub_Plugin implements Typecho_Plugin_Interface
     public static function attachmentDataHandle($content)
     {
         $options = Typecho_Widget::widget('Widget_Options')->plugin('TypechoUpGithub');
-        $filePath = "https://cdn.jsdelivr.net/gh/" . $options->githubUser . "/" . $options->githubRepo . "@latest" . $content['attachment']->path;
+        $filePath = $options->customurl. $content['attachment']->path;
         return file_get_contents($filePath);
     }
 
@@ -438,7 +438,7 @@ class TypechoUpGithub_Plugin implements Typecho_Plugin_Interface
         if ($options->urlType == "latest") {
             $latest = "@latest";
         }
-        return Typecho_Common::url($content['attachment']->path, "https://cdn.jsdelivr.net/gh/" . $options->githubUser . "/" . $options->githubRepo . $latest);
+        return Typecho_Common::url($content['attachment']->path, $options->customurl. $latest);
     }
 
     /**
@@ -465,7 +465,7 @@ class TypechoUpGithub_Plugin implements Typecho_Plugin_Interface
         #$date = date('[Y/m/d H:i:s]', time());
         #$text = $date . " " . $path . " " . $content . "\n";
         $options = Typecho_Widget::widget('Widget_Options')->plugin('TypechoUpGithub');
-        $text ="https://cdn.jsdelivr.net/gh/" . $options->githubUser . "/" . $options->githubRepo . "@latest".$path. "\n";
+        $text =$options->customurl.$path. "\n";
         $log_file = dirname(__FILE__) . "/log/img.txt";
         if (!file_exists($log_file)) {
             $file = fopen($log_file, 'w');
